@@ -7,6 +7,7 @@ from typing import Optional, List
 
 class ItemFile(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    item_type: str = "file"
     path: str
     name: str
     file_name: str
@@ -16,6 +17,7 @@ class ItemFile(BaseModel):
     creation_date: datetime
     last_update: datetime = datetime.now()
     operator: str
+    comment: str
     parent: Optional[PyObjectId]
 
     class Config:
@@ -31,6 +33,7 @@ class ItemFile(BaseModel):
                     "project_id": "1923801231023",
                     "file_type": "text",
                     "creation_date": "2008-09-15T15:57:00+05:00",
-                    "operator": "jojo"
+                    "operator": "jojo",
+                    "comment": "this is a new item"
                     }
                 }

@@ -10,7 +10,8 @@ class ItemFolder(BaseModel):
     project_id: PyObjectId
     order: int
     status: int
-    children: Optional[List[PyObjectId]]
+    item_type: str = "folder"
+    parent: Optional[PyObjectId]
 
     class Config:
         allow_population_by_field_name = True
