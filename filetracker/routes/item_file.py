@@ -17,5 +17,8 @@ async def add_item_file(request: Request, item_file: ItemFile = Body(...)):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with ID {item_file['project_id']} not found")
 
 
-
-
+@router.get("/{id}", response_description="get item file by id", response_model=ItemFile)
+async def get_item_file(item_id: str, request: Request):
+    if (item_file := await request.app.database["items"].find_one({"_id": item_id})) is not None:
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content=item_file)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Item File with ID {item_id} not found")

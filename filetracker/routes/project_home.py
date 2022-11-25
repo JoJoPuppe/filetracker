@@ -46,8 +46,7 @@ async def find_project(proj_id: str, request: Request):
               dict([*list(node.items()), ("children", children(id(node)))])
           )
 
-        print(dumps(C))
-        return project
+        return dumps(C)
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with ID {proj_id} not found")
 
