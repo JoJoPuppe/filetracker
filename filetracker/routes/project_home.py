@@ -23,7 +23,7 @@ async def list_projects(request: Request):
     return project
 
 
-@router.get("/{id}", response_description="get project by id")
+@router.get("/{proj_id}", response_description="get project by id")
 async def find_project(proj_id: str, request: Request):
     if (project := await request.app.database["items"].find({"project_id": proj_id}).to_list(length=300)) is not None:
 

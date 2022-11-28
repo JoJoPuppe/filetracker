@@ -32,7 +32,7 @@ async def add_item_file(request: Request, item_file: ItemFile = Body(...)):
 
 
 @router.get(
-    "/{id}", response_description="get item file by id", response_model=ItemFile
+    "/{item_id}", response_description="get item file by id", response_model=ItemFile
 )
 async def get_item_file(item_id: str, request: Request):
     if (

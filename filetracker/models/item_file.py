@@ -16,7 +16,7 @@ class ItemFile(BaseModel):
     status: int
     project_id: PyObjectId
     file_type: str
-    creation_date: datetime
+    creation_date: datetime = datetime.now()
     last_update: datetime = datetime.now()
     operator: str
     comment: str
@@ -36,7 +36,6 @@ class ItemFile(BaseModel):
                 "status": "0",
                 "project_id": "1923801231023",
                 "file_type": "text",
-                "creation_date": "2008-09-15T15:57:00+05:00",
                 "operator": "jojo",
                 "comment": "this is a new item",
             }
