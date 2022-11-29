@@ -26,6 +26,7 @@ async def list_projects(request: Request):
 @router.get("/{proj_id}", response_description="get project by id")
 async def find_project(proj_id: str, request: Request):
     if (project := await request.app.database["items"].find({"project_id": proj_id}).to_list(length=300)) is not None:
+        print(project)
 
         def id(node):
           return node['_id']
@@ -37,16 +38,18 @@ async def find_project(proj_id: str, request: Request):
             n = node.update({"children": children(id(node))})
             return n
 
+        if len(project) > 0:
+            A = project
+            C = tree \
+              ( A
+              , parent
+              , lambda node, children:
+                  dict([*list(node.items()), ("children", children(id(node)))])
+              )
 
-        A = project
-        C = tree \
-          ( A
-          , parent
-          , lambda node, children:
-              dict([*list(node.items()), ("children", children(id(node)))])
-          )
-
-        return dumps(C)
+            return dumps(C)
+        else:
+            return dumps([])
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with ID {proj_id} not found")
 

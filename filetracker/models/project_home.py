@@ -8,7 +8,7 @@ from typing import Optional, List
 class ProjectHome(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(...)
-    creation_date: datetime
+    creation_date: datetime = datetime.now()
     items: Optional[List[PyObjectId]]
 
     class Config:
@@ -17,7 +17,6 @@ class ProjectHome(BaseModel):
             json_encoders = {ObjectId: str}
             schema_extra = {
                 "example": {
-                    "name": "Test Project",
-                    "creation_date": "2008-09-15T15:53:00+05:00"
+                    "name": "Test Project"
                 }
             }

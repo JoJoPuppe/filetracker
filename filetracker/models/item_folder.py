@@ -8,10 +8,11 @@ class ItemFolder(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str
     project_id: PyObjectId
-    order: int
+    order: int = 0
     status: int
     item_type: str = "folder"
     parent: Optional[PyObjectId]
+    children: List = []
 
     class Config:
         allow_population_by_field_name = True
@@ -21,7 +22,6 @@ class ItemFolder(BaseModel):
                 "example": {
                     "name": "My Item Folder",
                     "project_id": "1923801231023",
-                    "order": "0",
                     "status": "0"
                     }
                 }

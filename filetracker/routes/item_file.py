@@ -43,3 +43,19 @@ async def get_item_file(item_id: str, request: Request):
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Item File with ID {item_id} not found",
     )
+
+@router.put("/{item_id}", response_description="update item file", response_model=ItemFile)
+async def update_item_file(item_id: str, request: Request):
+    req = {k: v for k, v in request.dict().items() if v is not None}
+    if len(req) < 1:
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"no values to update")
+    item = await request.app.database['items'].find_one({"_id": item_id})
+    if item:
+        updated_item = await request.app.database['items'].update_one(
+            {"_id": ObjectId(id)}, {"$set": req}
+        )
+        if updated_item:
+            return JSONResponse(status_code=status.HTTP_201_CREATED, content=updated_item)
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"error on updating item")
+
+
