@@ -45,17 +45,18 @@ async def get_item_file(item_id: str, request: Request):
     )
 
 @router.put("/{item_id}", response_description="update item file", response_model=ItemFile)
-async def update_item_file(item_id: str, request: Request):
-    req = {k: v for k, v in request.dict().items() if v is not None}
-    if len(req) < 1:
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"no values to update")
-    item = await request.app.database['items'].find_one({"_id": item_id})
-    if item:
-        updated_item = await request.app.database['items'].update_one(
-            {"_id": ObjectId(id)}, {"$set": req}
+async def update_item_file(item_id: str, request: Request, item_file = Body(...)):
+    item_file = jsonable_encoder(item_file)
+    item_file = {k: v for k, v in item_file.items() if v is not None}
+    if len(item_file) >= 1:
+        await request.app.database["items"].update_one(
+            {"_id": item_id}, {"$set": item_file}
         )
-        if updated_item:
+        if (
+                updated_item := await request.app.database["items"].find_one({"_id": item_id})
+        ) is not None:
             return JSONResponse(status_code=status.HTTP_201_CREATED, content=updated_item)
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"error on updating item")
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Book with ID {id} not found")
 
 
