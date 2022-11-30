@@ -44,6 +44,30 @@ async def get_item_file(item_id: str, request: Request):
         detail=f"Item File with ID {item_id} not found",
     )
 
+
+@router.get(
+    "/v2/{item_id}", response_description="get item file by id"
+)
+async def get_item_file(item_id: str, request: Request):
+    cursor = request.app.database['items'].aggregate([
+        {"$match": { "_id": item_id }},
+        {"$lookup": {
+            "from": "items",
+            "localField": "history",
+            "foreignField": "_id",
+            "as": "history"
+        }}
+    ])
+    item_file = await cursor.to_list(length=None)
+    print(item_file)
+    if item_file is not None:
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content=item_file[0])
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Item File with ID {item_id} not found",
+    )
+
+
 @router.put("/{item_id}", response_description="update item file", response_model=ItemFile)
 async def update_item_file(item_id: str, request: Request, item_file = Body(...)):
     item_file = jsonable_encoder(item_file)

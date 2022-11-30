@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+import uuid as uuid_pkg
 
 from bson import ObjectId
 from pydantic import BaseModel, Field
@@ -20,6 +21,8 @@ class ItemFile(BaseModel):
     last_update: datetime = datetime.now()
     operator: str
     comment: str
+    version: int = 0
+    item_id: uuid_pkg.UUID = Field(default_factory=uuid_pkg.uuid4)
     parent: Optional[PyObjectId]
     history: Optional[List[PyObjectId]]
     requirements: Optional[List[PyObjectId]]
