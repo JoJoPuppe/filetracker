@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from .pyobjectid import PyObjectId
 from bson import ObjectId
 from typing import Optional, List
+import uuid as uuid_pkg
 
 
 class ItemFolder(BaseModel):
@@ -11,6 +12,7 @@ class ItemFolder(BaseModel):
     order: int = 0
     status: int
     item_type: str = "folder"
+    item_id: uuid_pkg.UUID = Field(default_factory=uuid_pkg.uuid4)
     parent: Optional[PyObjectId]
     children: List = []
 

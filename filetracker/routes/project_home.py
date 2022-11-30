@@ -27,9 +27,10 @@ async def list_projects(request: Request):
 async def find_project(proj_id: str, request: Request):
     cursor = request.app.database['items'].aggregate([
         {"$match": { "project_id": proj_id }},
+        {"$sort": { "version": -1 }},
         {"$group": {"_id": "$item_id",
-            "max_ver": { "$max": "$version" },
-            "docs": { "$push": "$$ROOT" }}},
+            "doc": { "$first": "$$ROOT" }}},
+        {"$replaceRoot": { "newRoot": "$doc"}},
        # {"$project": {
        #     "docs": { "$filter": {
        #         "input": "$docs",
@@ -44,7 +45,6 @@ async def find_project(proj_id: str, request: Request):
     print(project)
     #if (project := await request.app.database["items"].find({"project_id": proj_id }).to_list(length=300)) is not None:
     if project is not None:
-        project = project[0]['docs']
 
         def id(node):
           return node['_id']
