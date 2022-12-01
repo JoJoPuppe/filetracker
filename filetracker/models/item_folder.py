@@ -9,7 +9,7 @@ class ItemFolder(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str
     project_id: PyObjectId
-    order: int = 0
+    order_index: int = 0
     status: int
     item_type: str = "folder"
     item_id: uuid_pkg.UUID = Field(default_factory=uuid_pkg.uuid4)

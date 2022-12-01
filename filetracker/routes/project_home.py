@@ -31,15 +31,6 @@ async def find_project(proj_id: str, request: Request):
         {"$group": {"_id": "$item_id",
             "doc": { "$first": "$$ROOT" }}},
         {"$replaceRoot": { "newRoot": "$doc"}},
-       # {"$project": {
-       #     "docs": { "$filter": {
-       #         "input": "$docs",
-       #         "as": "doc",
-       #         "cond": {
-       #             "$eq": ["$max_ver", "$$doc.value"]
-       #         }
-       #     }}
-       # }},
     ])
     project = await cursor.to_list(length=None)
     print(project)

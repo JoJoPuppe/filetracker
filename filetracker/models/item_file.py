@@ -20,6 +20,7 @@ class ItemFile(BaseModel):
     creation_date: datetime = datetime.now()
     last_update: datetime = datetime.now()
     operator: str
+    order_index: int = 0
     comment: str
     version: int = 0
     item_id: uuid_pkg.UUID = Field(default_factory=uuid_pkg.uuid4)
