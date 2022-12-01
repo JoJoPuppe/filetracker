@@ -41,7 +41,15 @@ async def reorder_project(request: Request, all_items = Body(...)):
     all_items = loads(all_items)
     order_dict = build_flat_order(all_items, True)
 
-    get_project = await request.app.database['items'].find({"project_id": all_items[0]["project_id"]}).to_list(length=300)
+    cursor = request.app.database['items'].aggregate([
+        {"$match": { "project_id": all_items[0]['project_id'] }},
+        {"$sort": { "version": -1 }},
+        {"$group": {"_id": "$item_id",
+            "doc": { "$first": "$$ROOT" }}},
+        {"$replaceRoot": { "newRoot": "$doc"}},
+    ])
+    get_project = await cursor.to_list(length=None)
+    # get_project = await request.app.database['items'].find({"project_id": all_items[0]["project_id"]}).to_list(length=300)
     if get_project is not None:
         for item in get_project:
             if order_dict[item['_id']]['parent'] != item['parent'] or order_dict[item['_id']]['order'] != item['order_index']:
@@ -53,6 +61,32 @@ async def reorder_project(request: Request, all_items = Body(...)):
 
 @router.get("/{proj_id}", response_description="get project by id")
 async def find_project(proj_id: str, request: Request):
+    cursor = request.app.database['items'].aggregate([
+        {"$match": { "project_id": proj_id }},
+        {"$sort": { "version": -1 }},
+        {"$group": {"_id": "$item_id",
+            "doc": { "$first": "$$ROOT" }}},
+        {"$replaceRoot": { "newRoot": "$doc"}},
+    ])
+    project = await cursor.to_list(length=None)
+    #if (project := await request.app.database["items"].find({"project_id": proj_id }).to_list(length=300)) is not None:
+    print(project)
+    if project is not None:
+        def to_dict(b):
+            kids = [*map(to_dict, [(d['_id'], d) for d in project if d['parent'] == b[0]])]
+            kids_sorted = sorted(kids, key=lambda x: x['order_index'])
+            return {**b[1], 'children':kids_sorted}
+
+        result = [to_dict((d['_id'], d)) for d in project if not d['parent']]
+        sorted_result = sorted(result, key=lambda x: x['order_index'])
+
+        #print(dumps(sorted_result, indent=4))
+        return dumps(sorted_result)
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with ID {proj_id} not found")
+
+@router.get("/v2/{proj_id}", response_description="get project by id")
+async def find_project_v2(proj_id: str, request: Request):
     cursor = request.app.database['items'].aggregate([
         {"$match": { "project_id": proj_id }},
         {"$sort": { "version": -1 }},
@@ -90,4 +124,3 @@ async def find_project(proj_id: str, request: Request):
             return dumps({"tree": [], "flat": []})
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with ID {proj_id} not found")
-
