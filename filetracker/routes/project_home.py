@@ -36,6 +36,15 @@ async def list_projects(request: Request):
 
     return project
 
+@router.get("/name/{proj_id}", response_description="get project name")
+async def get_project(proj_id: str, request: Request):
+    project = await request.app.database['project_home'].find_one({"_id": proj_id})
+    if project is not None:
+        return JSONResponse(status_code=200, content=project)
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project with ID {proj_id} not found")
+
+
 @router.put("/reorder", response_description="reorder items")
 async def reorder_project(request: Request, all_items = Body(...)):
     all_items = loads(all_items)
@@ -57,6 +66,8 @@ async def reorder_project(request: Request, all_items = Body(...)):
                     "order_index": order_dict[item['_id']]['order']}
                 await request.app.database["items"].update_one(
                     {"_id": item['_id']}, {"$set": item_file})
+
+        return dumps({"status": "reorder done!"})
 
 
 @router.get("/{proj_id}", response_description="get project by id")
