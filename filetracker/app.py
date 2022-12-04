@@ -15,9 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(item_file.router, tags=["Item File"], prefix="/itemfile")
-app.include_router(project_home.router, tags=["Project"])
-app.include_router(item_folder.router, tags=["Item Folder"], prefix="/itemfolder")
+app.include_router(item_file.router, tags=["Item File"], prefix="/api/itemfile")
+app.include_router(project_home.router, tags=["Project"], prefix="/api/project")
+app.include_router(item_folder.router, tags=["Item Folder"], prefix="/api/itemfolder")
 
 @app.on_event("startup")
 def startup_db_client():
@@ -26,6 +26,6 @@ def startup_db_client():
     )
     app.database = app.mongodb_client["filetracker"]
 
-@app.get("/", tags=["Root"])
-async def read_root() -> dict:
-    return {"message": "Welcome to your beanie"}
+# @app.get("/api", tags=["Root"])
+# async def read_root() -> dict:
+#     return {"message": "Welcome to your beanie"}
