@@ -18,7 +18,9 @@ async def add_log(request: Request, log_message: ItemLog = Body(...)):
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_log)
 
 
-@router.get("/{proj_id}", response_description="getting all log messages from project", response_model=ItemLog)
+@router.get("/{proj_id}", response_description="getting all log messages from project")
 async def get_logs(request: Request,  proj_id: str):
-    all_logs = await request.app.database["item_log"].find({"project_id": proj_id}).sort({"creation_date": 1}).to_list(length=300)
+    cursor = request.app.database["item_log"].find({"project_id": proj_id}).sort("creation_date")
+
+    all_logs = await cursor.to_list(length=None)
     return all_logs
