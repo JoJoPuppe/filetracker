@@ -6,10 +6,24 @@ import bleach
 from fastapi import APIRouter, Body, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from datetime import datetime
 
 from filetracker.models.item_log import ItemLog
 
 router = APIRouter()
+
+
+def parse_rfc3339(datetime_str: str) -> datetime:
+    try:
+        return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+    except ValueError:
+        # Perhaps the datetime has a whole number of seconds with no decimal
+        # point. In that case, this will work:
+        return datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S%z")
+
+def convert_date(iso_date):
+    date_obj = parse_rfc3339(iso_date)
+    return datetime.strftime(date_obj, "%d.%m.%y | %H:%M:%S")
 
 
 @router.post("/", response_description="added log message", response_model=ItemLog)
@@ -34,6 +48,8 @@ async def get_logs(request: Request, proj_id: str):
     all_logs = await cursor.to_list(length=None)
     for log in all_logs:
         log["log_message"] = html.unescape(log["log_message"])
+        log["creation_date"] = convert_date(log["creation_date"])
+        log["last_update"] = convert_date(log["last_update"])
     return all_logs
 
 

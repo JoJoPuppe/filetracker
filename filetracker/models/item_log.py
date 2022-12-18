@@ -7,8 +7,8 @@ from typing import Optional, List
 
 class ItemLog(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    creation_date: datetime = datetime.now()
-    last_update: datetime = datetime.now()
+    creation_date: datetime = Field(...)
+    last_update: datetime = Field(...)
     log_message: str = Field(...)
     project_id: PyObjectId
 
