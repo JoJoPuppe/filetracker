@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Body, HTTPException, Request, status, Response
+from fastapi import APIRouter, Body, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
@@ -45,19 +45,21 @@ async def get_item_file(item_id: str, request: Request):
     )
 
 
-@router.get(
-    "/v2/{item_id}", response_description="get item file by id"
-)
+@router.get("/v2/{item_id}", response_description="get item file by id")
 async def get_item_file(item_id: str, request: Request):
-    cursor = request.app.database['items'].aggregate([
-        {"$match": { "_id": item_id }},
-        {"$lookup": {
-            "from": "items",
-            "localField": "history",
-            "foreignField": "_id",
-            "as": "history"
-        }}
-    ])
+    cursor = request.app.database["items"].aggregate(
+        [
+            {"$match": {"_id": item_id}},
+            {
+                "$lookup": {
+                    "from": "items",
+                    "localField": "history",
+                    "foreignField": "_id",
+                    "as": "history",
+                }
+            },
+        ]
+    )
     item_file = await cursor.to_list(length=None)
     print(item_file)
     if item_file is not None:
@@ -68,8 +70,10 @@ async def get_item_file(item_id: str, request: Request):
     )
 
 
-@router.put("/{item_id}", response_description="update item file", response_model=ItemFile)
-async def update_item_file(item_id: str, request: Request, item_file = Body(...)):
+@router.put(
+    "/{item_id}", response_description="update item file", response_model=ItemFile
+)
+async def update_item_file(item_id: str, request: Request, item_file=Body(...)):
     item_file = jsonable_encoder(item_file)
     item_file = {k: v for k, v in item_file.items() if v is not None}
     if len(item_file) >= 1:
@@ -77,11 +81,18 @@ async def update_item_file(item_id: str, request: Request, item_file = Body(...)
             {"_id": item_id}, {"$set": item_file}
         )
         if (
-                updated_item := await request.app.database["items"].find_one({"_id": item_id})
+            updated_item := await request.app.database["items"].find_one(
+                {"_id": item_id}
+            )
         ) is not None:
-            return JSONResponse(status_code=status.HTTP_201_CREATED, content=updated_item)
+            return JSONResponse(
+                status_code=status.HTTP_201_CREATED, content=updated_item
+            )
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"item with id {item_id} not found")
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"item with id {item_id} not found",
+    )
 
 
 @router.delete("/{item_id}", response_description="delete item file")
@@ -92,16 +103,23 @@ async def delete_item(item_id: str, request: Request, response: Response):
         response.status_code = status.HTTP_204_NO_CONTENT
         return response
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"item with id {item_id} not found")
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"item with id {item_id} not found",
+    )
 
 
 @router.delete("/history/{hist_id}", response_description="delete item file")
 async def delete_item_with_history(hist_id: str, request: Request, response: Response):
-    delete_result = await request.app.database["items"].delete_many({"item_id": hist_id})
+    delete_result = await request.app.database["items"].delete_many(
+        {"item_id": hist_id}
+    )
 
     if delete_result.deleted_count != 0:
         response.status_code = status.HTTP_204_NO_CONTENT
         return response
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"item with id {hist_id} not found")
-
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"item with id {hist_id} not found",
+    )
