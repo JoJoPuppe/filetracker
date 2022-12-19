@@ -5,9 +5,16 @@ from fastapi.responses import JSONResponse
 from filetracker.models.project_home import ProjectHome
 from ..tree.tree import tree
 from json import dumps, loads
+from filetracker.utils import convert_date
 
 router = APIRouter()
 
+def convert_creation_and_update(item):
+    if item['item_type'] == 'folder':
+        return item
+    item['creation_date'] = convert_date(item['creation_date'])
+    item['last_update'] = convert_date(item['last_update'])
+    return item
 
 def build_flat_order(arr, no_parent):
     x = {}
@@ -83,6 +90,7 @@ async def find_project(proj_id: str, request: Request):
     #if (project := await request.app.database["items"].find({"project_id": proj_id }).to_list(length=300)) is not None:
     print(project)
     if project is not None:
+        project = list(map(convert_creation_and_update, project))
         def to_dict(b):
             kids = [*map(to_dict, [(d['_id'], d) for d in project if d['parent'] == b[0]])]
             kids_sorted = sorted(kids, key=lambda x: x['order_index'])

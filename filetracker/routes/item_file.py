@@ -5,8 +5,14 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from filetracker.models.item_file import ItemFile
+from filetracker.utils import convert_date
 
 router = APIRouter()
+
+def convert_creation_and_update(item):
+    item['creation_date'] = convert_date(item['creation_date'])
+    item['last_update'] = convert_date(item['last_update'])
+    return item
 
 
 @router.post("/", response_description="Item added to Project", response_model=ItemFile)
@@ -21,6 +27,7 @@ async def add_item_file(request: Request, item_file: ItemFile = Body(...)):
         created_item_file = await request.app.database["items"].find_one(
             {"_id": new_item_file.inserted_id}
         )
+        created_item_file = convert_creation_and_update(created_item_file)
         return JSONResponse(
             status_code=status.HTTP_201_CREATED, content=created_item_file
         )
@@ -38,6 +45,7 @@ async def get_item_file(item_id: str, request: Request):
     if (
         item_file := await request.app.database["items"].find_one({"_id": item_id})
     ) is not None:
+        item_file = convert_creation_and_update(item_file)
         return JSONResponse(status_code=status.HTTP_201_CREATED, content=item_file)
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -63,6 +71,9 @@ async def get_item_file(item_id: str, request: Request):
     item_file = await cursor.to_list(length=None)
     print(item_file)
     if item_file is not None:
+        item_file[0] = convert_creation_and_update(item_file[0])
+        for hist in item_file[0]['history']:
+            hist = convert_creation_and_update(hist)
         return JSONResponse(status_code=status.HTTP_201_CREATED, content=item_file[0])
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -85,6 +96,7 @@ async def update_item_file(item_id: str, request: Request, item_file=Body(...)):
                 {"_id": item_id}
             )
         ) is not None:
+            updated_item = convert_creation_and_update(updated_item)
             return JSONResponse(
                 status_code=status.HTTP_201_CREATED, content=updated_item
             )

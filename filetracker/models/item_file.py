@@ -13,20 +13,20 @@ class ItemFile(BaseModel):
     item_type: str = "file"
     path: str
     name: str
-    file_name: str
     status: int
     project_id: PyObjectId
     file_type: str
-    creation_date: datetime = datetime.now()
-    last_update: datetime = datetime.now()
+    reject_text: str = ''
+    creation_date: datetime = Field(...)
+    last_update: datetime = Field(...)
     operator: str
     order_index: int = 0
     comment: str
+    link: str
     version: int = 0
     item_id: uuid_pkg.UUID = Field(default_factory=uuid_pkg.uuid4)
     parent: Optional[PyObjectId]
     history: Optional[List[PyObjectId]]
-    requirements: Optional[List[PyObjectId]]
 
     class Config:
         allow_population_by_field_name = True
@@ -36,11 +36,12 @@ class ItemFile(BaseModel):
             "example": {
                 "path": "/new/path/to/file",
                 "name": "My Item File",
-                "file_name": "221022_my_item_file.ext",
                 "status": "0",
                 "project_id": "1923801231023",
                 "file_type": "text",
                 "operator": "jojo",
+                "reject_text": "used wrong Logo file",
                 "comment": "this is a new item",
+                "link": "http://link.to/asset.mov"
             }
         }
