@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Body, status, Request
+from fastapi import APIRouter, HTTPException, Body, status, Request, Depends
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from typing import List
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -6,14 +7,39 @@ from filetracker.models.project_home import ProjectHome
 from ..tree.tree import tree
 from json import dumps, loads
 from filetracker.utils import convert_date
+import secrets
+import os
 
 router = APIRouter()
 
+security = HTTPBasic()
+
+def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+    current_username = credentials.username
+    correct_username = os.environ.get("USER")
+    is_correct_username = secrets.compare_digest(
+        current_username, correct_username
+    )
+    current_password = credentials.password
+    correct_password = os.environ.get("PASS")
+    is_correct_password = secrets.compare_digest(
+        current_password, correct_password
+    )
+    if not (is_correct_username and is_correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
 def convert_creation_and_update(item):
-    if item['item_type'] == 'folder':
-        return item
+    if 'item_type' in item:
+        if item['item_type'] == 'folder':
+            return item
     item['creation_date'] = convert_date(item['creation_date'])
-    item['last_update'] = convert_date(item['last_update'])
+    if 'last_update' in item:
+        item['last_update'] = convert_date(item['last_update'])
     return item
 
 def build_flat_order(arr, no_parent):
@@ -38,8 +64,9 @@ async def add_project(request: Request, project: ProjectHome = Body(...)):
 
 
 @router.get("/", response_description="get all project", response_model=List[ProjectHome])
-async def list_projects(request: Request):
+async def list_projects(request: Request, username: str = Depends(get_current_username)):
     project = await request.app.database["project_home"].find().to_list(length=300)
+    project = list(map(convert_creation_and_update, project))
 
     return project
 

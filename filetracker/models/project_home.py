@@ -8,7 +8,7 @@ from typing import Optional, List
 class ProjectHome(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(...)
-    creation_date: datetime = datetime.now()
+    creation_date: datetime = Field(...)
     items: Optional[List[PyObjectId]]
 
     class Config:
