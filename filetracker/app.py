@@ -16,10 +16,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(item_file.router, tags=["Item File"], prefix="/api/itemfile")
-app.include_router(project_home.router, tags=["Project"], prefix="/api/project")
-app.include_router(item_folder.router, tags=["Item Folder"], prefix="/api/itemfolder")
-app.include_router(logs.router, tags=["Logs"], prefix="/api/logs")
+app.include_router(item_file.router,
+                   tags=["Item File"],
+                   prefix="/api/itemfile")
+app.include_router(project_home.router,
+                   tags=["Project"],
+                   prefix="/api/project")
+app.include_router(item_folder.router,
+                   tags=["Item Folder"],
+                   prefix="/api/itemfolder")
+app.include_router(logs.router,
+                   tags=["Logs"],
+                   prefix="/api/logs")
 
 
 @app.on_event("startup")

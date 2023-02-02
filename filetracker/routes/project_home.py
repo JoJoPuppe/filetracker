@@ -16,19 +16,19 @@ security = HTTPBasic()
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
     current_username = credentials.username
-    correct_username = os.environ.get("USER")
+    correct_username = os.environ.get("LOGIN")
     is_correct_username = secrets.compare_digest(
         current_username, correct_username
     )
     current_password = credentials.password
-    correct_password = os.environ.get("PASS")
+    correct_password = os.environ.get("PASSWORD")
     is_correct_password = secrets.compare_digest(
         current_password, correct_password
     )
     if not (is_correct_username and is_correct_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect user or password",
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
@@ -63,12 +63,21 @@ async def add_project(request: Request, project: ProjectHome = Body(...)):
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_project)
 
 
-@router.get("/", response_description="get all project", response_model=List[ProjectHome])
-async def list_projects(request: Request, username: str = Depends(get_current_username)):
-    project = await request.app.database["project_home"].find().to_list(length=300)
-    project = list(map(convert_creation_and_update, project))
+@router.get("/", response_description="get all project")
+async def list_projects(request: Request):
+    projects = await request.app.database["project_home"]\
+        .find().to_list(length=300)
+    for project in projects:
+        project['creation_date'] = convert_date(project['creation_date'])
+    return projects
 
-    return project
+
+# @router.get("/", response_description="get all project", response_model=List[ProjectHome])
+# async def list_projects(request: Request, username: str = Depends(get_current_username)):
+#     project = await request.app.database["project_home"].find().to_list(length=300)
+#
+#     return project
+
 
 @router.get("/name/{proj_id}", response_description="get project name")
 async def get_project(proj_id: str, request: Request):
