@@ -1,6 +1,7 @@
 import motor.motor_asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
 from filetracker.routes import item_file, item_folder, logs, project_home
 
@@ -32,8 +33,10 @@ app.include_router(logs.router,
 
 @app.on_event("startup")
 def startup_db_client():
+    mongo_url = os.environ.get("MONGOURL")
+    # "mongodb://localhost:27017"
     app.mongodb_client = motor.motor_asyncio.AsyncIOMotorClient(
-        "mongodb://localhost:27017"
+        mongo_url
     )
     app.database = app.mongodb_client["filetracker"]
 
